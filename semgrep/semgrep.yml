@@ -1,0 +1,7 @@
+rules:
+  - id: py-unsafe-eval
+    languages: [python]
+    message: "Use of eval() is unsafe (training demo)."
+    severity: ERROR
+    pattern: |
+      eval(...)
