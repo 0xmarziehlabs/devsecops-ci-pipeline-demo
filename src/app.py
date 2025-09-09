@@ -1,13 +1,16 @@
+# src/app.py
+import ast
+
 def hello(name: str) -> str:
     return f"Hello, {name}!"
 
-# ❗ INTENTIONAL VULNERABILITY (for training/demo only)
-def insecure_eval(user_input: str):
+def safe_eval_literal(expr: str):
     """
-    DO NOT USE IN PRODUCTION.
-    This function intentionally uses eval() to demonstrate how SAST (Semgrep) can catch unsafe patterns.
+    Safe alternative for demo:
+    Only evalutes python *literals* (numbers, strings, tuples, lists, dicts, booleans, None).
+    This avoids executing arbitary code (no expressions, no function calls).
     """
-    return eval(user_input)  # unsafe by design
+    return ast.literal_eval(expr)
 
 
 if __name__ == "__main__":
