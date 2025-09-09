@@ -47,3 +47,4 @@ This project demonstrates how security can be embedded directly into pipelines â
 
 ## License
 This project is licensed under the MIT License.
+
