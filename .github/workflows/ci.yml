@@ -105,12 +105,12 @@ jobs:
 
       - name: Run TruffleHog (git history, current branch only)
         run: |
+          PREV="${{ github.event.before }}"
           docker run --rm \
             -v ${{ github.workspace }}:/repo \
-            -v ${{ github.workspace}}/trufflehog_exclude_paths.txt:/trufflehog_exclude_paths.txt \
             ghcr.io/trufflesecurity/trufflehog:latest \
             git file:///repo \
             --branch "${BRANCH}" \
-            --exclude-paths=/trufflehog_exclude_paths.txt \
+            --since-commit "${PREV}" \
             --results=verified,unverified,unknown \
             --fail
