@@ -165,7 +165,7 @@ devsecops-ci-pipeline-demo/
 ![TruffleHog pass example](docs/img/trufflehog_pass.png)
 
 - **TruffleHog_Scan_weekly(pass):** 
-![TruffleHog_Weekly pass example](docs/img/ptrufflehog_weekly_scan.png)
+![TruffleHog_Weekly pass example](docs/img/trufflehog_weekly_scan.png)
 
 - **pip-audit(pass):** – reports no known vulnerabilities
 ![pip-audit pass example](docs/img/pip_audit_scan_pass_second.png)
