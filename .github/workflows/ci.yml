@@ -38,3 +38,43 @@ jobs:
       - name: Run tests
         run: |
           python -m tests.test_app
+  trufflehog_filesystem:
+    runs-on: ubuntu-latest
+    needs: [semgrep, tests]
+    steps:
+      - name: Checkout repository (working tree)
+        uses: actions/checkout@v4
+
+      - name: Run TruffleHog (filesystem)
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/repo \
+            ghcr.io/trufflesecurity/trufflehog:latest \
+            filesystem /repo \
+            --results=verified,unverified,unknown \
+            --fail
+          
+  trufflehog_git:
+    runs-on: ubuntu-latest
+    needs: [semgrep, tests]
+    steps:
+      - name: Checkout repository (full history for git scan)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine branch name
+        id: br
+        run: |
+          echo "BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}" >> $GITHUB_ENV
+          echo "Branch to scan: ${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+
+      - name: Run TruffleHog (git history, current branch only)
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/repo \
+            ghcr.io/trufflesecurity/trufflehog:latest \
+            git file:///repo \
+            --branch "${BRANCH}" \
+            --results=verified,unverified,unknown \
+            --fail
