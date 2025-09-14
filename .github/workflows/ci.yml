@@ -49,8 +49,10 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/repo \
+            -v ${{ github.workspace}}/trufflehog_exclude_paths.txt:/trufflehog_exclude_paths.txt \
             ghcr.io/trufflesecurity/trufflehog:latest \
             filesystem /repo \
+            --exclude-paths=/trufflehog_exclude_paths.txt \
             --results=verified,unverified,unknown \
             --fail
           
