@@ -1,0 +1,27 @@
+name: Security - Weekly Git Secret Scan (main)
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"   # every monday 03:00 UTC
+  workflow_dispatch:        # possible run from Actions tab
+
+jobs:
+  trufflehog_git_main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Run TruffleHog (git history - verified only)
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v ${{ github.workspace }}:/repo \
+            ghcr.io/trufflesecurity/trufflehog:latest \
+            git file:///repo \
+            --branch main \
+            --results=verified \
+            --fail
