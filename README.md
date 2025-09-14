@@ -42,15 +42,14 @@ A minimal repository that showcases:
 - [x] **TruffleHog (secrets)** integrated for filesystem + git scans
 - [x] Keys handled securely (stored in GitHub secrets, excluded from repo)
 - [x] Add scheduled TruffleHog scan on main (verified-only)
-- [ ] Add pip-audit (dependency scanning)
+- [x] Add pip-audit (dependency scanning)
 - [ ] Polich docs (badges, PR/Issue templates), Release `v0.1`
 
 ---
 
 ## Roadmap (Next Steps)
-1. **pip-audit (SCA):** audit Python dependencies; fail on High/Critical.
-2. **Polish:** badges, templates, demo screencast (30–45s)
-3. **Release:** tag first stable version (`v0.1`).
+1. **Polish:** badges, templates, demo screencast (30–45s)
+2. **Release:** tag first stable version (`v0.1`).
 
 ---
 
@@ -60,6 +59,8 @@ A minimal repository that showcases:
   - **Filesystem scan:** scans working tree at every PR/push (`--results=verified,unverified,unknown --fail`).
   - **Git history scan:** scans commits since previous push (using '--since-commit'), preventing old leaks from blocking new work.
   - **Weekly scheduled scan on `main`:** runs every Monday, scanning the full history but **fails only on verified secrets** → reduces false positives while ensuring repo stays clean over time.
+- **pip-audit job:** (`pip-audit` Action step) audits `requirements.txt` against the Python Packaging Advisory DB. 
+    → Fails CI if vulnerable dependencies are detected.
 - **Key Handling:**
   - Private keys (`Alfred`, `Marina`, `Christina`) are stored in GitHub Actions secrets.
   - At runtime, they’re written into `keys/` (excluded via `.gitignore` + `trufflehog_exclude_paths.txt`).
@@ -163,6 +164,12 @@ devsecops-ci-pipeline-demo/
 - **TruffleHog(Pass)**
 ![TruffleHog pass example](docs/img/trufflehog_pass.png)
 
+- **TruffleHog_Scan_weekly(pass)** 
+![TruffleHog_Weekly pass example](docs/img/trufflehog_weekly_scan.png)
+
+- **pip-audit(pass)** – reports no known vulnerabilities
+![pip-audit pass example](docs/img/pip_audit_scan_pass_second.png)
+
 - **PR Checks** – “Checks failed” → “All checks have passed”
 ![PR checks failed](docs/img/pr-checks-fail.png)
 ![PR checks passed](docs/img/pr-checks-pass.png)
@@ -173,6 +180,9 @@ devsecops-ci-pipeline-demo/
 
 Modern delivery needs speed **and** security.
 This repo shows how to **shift security left** and enforce guardrails directly in CI/CD — blocking unsafe patterns and secret leaks before they ever reach `main`.
+
+Together, Semgrep (SAST), TruffleHog (secret scanning), and pip-audit (SCA) demonstrate a layered DevSecOps approach: 
+catching code issues, secret leaks, and vulnerable dependencies before merge.
 
 ---
 

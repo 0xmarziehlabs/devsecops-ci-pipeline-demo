@@ -38,6 +38,26 @@ jobs:
       - name: Run tests
         run: |
           python -m tests.test_app
+ 
+  pip_audit:
+    runs-on: ubuntu-latest
+    needs: [semgrep, tests]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit
+        run: |
+          pip install pip-audit
+
+      - name: Run pip-audit
+        run: |
+          pip-audit -r requirements.txt
 
   build_keys:
     runs-on: ubuntu-latest
