@@ -119,13 +119,13 @@ Run TruffleHog locally:
 ```
 sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail 
 ```
-![trufflehog_git_locally](docs/img/trufflehog_git_locally.png)
+![trufflehog_git_locally](docs/img/trufflehog_git_locally1.png)
 
 ```
 sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest filesystem /repo  --exclude-paths=/trufflehog_exclude_paths.txt --results=verified,unverified,unknown --fail 
 
 ```
-![trufflehog_filesystem_locally](docs/img/trufflehog_filesystem_locally.png)
+![trufflehog_filesystem_locally](docs/img/trufflehog_filesystem_locally1.png)
 ---
 
 ## Project Structure
