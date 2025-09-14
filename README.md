@@ -41,6 +41,7 @@ A minimal repository that showcases:
 - [x] **Semgrep (SAST)** integrated and demonstrated  
 - [x] **TruffleHog (secrets)** integrated for filesystem + git scans
 - [x] Keys handled securely (stored in GitHub secrets, excluded from repo)
+- [x] Add scheduled TruffleHog scan on main (verified-only)
 - [ ] Add pip-audit (dependency scanning)
 - [ ] Polich docs (badges, PR/Issue templates), Release `v0.1`
 
@@ -56,8 +57,9 @@ A minimal repository that showcases:
 ## How It Works
 - **Semgrep job:** (`semgrep/semgrep.yml`) blocks unsafe patterns (e.g., `eval(...)`).
 - **TruffleHog jobs:**
-  - **Filesystem:** scans working tree at every PR/push (`--results=verified,unverified,unknown --fail`).
-  - **Git history:** scans commits since previous push (using '--since-commit'), preventing old leaks from blocking new work.
+  - **Filesystem scan:** scans working tree at every PR/push (`--results=verified,unverified,unknown --fail`).
+  - **Git history scan:** scans commits since previous push (using '--since-commit'), preventing old leaks from blocking new work.
+  - **Weekly scheduled scan on `main`:** runs every Monday, scanning the full history but **fails only on verified secrets** → reduces false positives while ensuring repo stays clean over time.
 - **Key Handling:**
   - Private keys (`Alfred`, `Marina`, `Christina`) are stored in GitHub Actions secrets.
   - At runtime, they’re written into `keys/` (excluded via `.gitignore` + `trufflehog_exclude_paths.txt`).
