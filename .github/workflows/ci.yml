@@ -62,11 +62,13 @@ jobs:
 
       - name: Use the keys (example)
         run: |
+          set -euo pipefail  
           ls -l keys
 
       - name: Secure cleanup (remove keys after use)
         if: always()
         run: |
+          set -euo pipefail
           shred -u keys/* || true
           rmdir keys || true
 
@@ -76,9 +78,9 @@ jobs:
     steps:
       - name: Checkout repository (working tree)
         uses: actions/checkout@v4
-
       - name: Run TruffleHog (filesystem)
         run: |
+          set -euo pipefail
           docker run --rm \
             -v ${{ github.workspace }}:/repo \
             -v ${{ github.workspace}}/trufflehog_exclude_paths.txt:/trufflehog_exclude_paths.txt \
@@ -98,13 +100,36 @@ jobs:
           fetch-depth: 0
 
       - name: Determine branch name
-        id: br
         run: |
           echo "BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}" >> $GITHUB_ENV
-          echo "Branch to scan: ${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          echo "Branch to scan: ${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"    
 
-      - name: Run TruffleHog (git history, current branch only)
+      - name: Compute merge-base for PR
+        if: github.event_name == 'pull_request'
         run: |
+          set -euo pipefail
+          git fetch origin "${{ github.base_ref }}:${{ github.base_ref }}"
+          BASE_SHA="$(git merge-base origin/${{ github.base_ref }} HEAD)"
+          echo "BASE_SHA=$BASE_SHA" >> $GITHUB_ENV
+          echo "Scanning since: $BASE_SHA"
+
+      - name: Run TruffleHog (git history - PR diff only)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          docker run --rm \
+          -v ${{ github.workspace }}:/repo \
+          ghcr.io/trufflesecurity/trufflehog:latest \
+          git file:///repo \
+          --branch "${BRANCH}" \
+          --since-commit "${BASE_SHA}" \
+          --results=verified,unverified,unknown \
+          --fail
+
+      - name: Run TruffleHog (git history - since previous push)
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
           PREV="${{ github.event.before }}"
           docker run --rm \
             -v ${{ github.workspace }}:/repo \
