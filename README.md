@@ -13,8 +13,9 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 - [What This Is](#what-this-is)
 - [Current Status](#current-status)
 - [Roadmap (Next Steps)](#roadmap-next-steps)
-- [How It Works (so far)](#how-it-works-so-far)
+- [How It Works](#how-it-works-so-far)
 - [Fail → Fix → Pass (Semgrep demo)](#fail--fix--pass-semgrep-demo)
+- [Fail → Fix → Pass (TruffleHog demo)](#fail--fix--pass-trufflehog-demo)
 - [Local Usage](#local-usage)
 - [Project Structure](#project-structure)
 - [Screenshots](#screenshots)
@@ -27,57 +28,79 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 ## What This Is
 A minimal repository that showcases:
 - **SAST** with **Semgrep** (custom rule)
+- **Secret Scanning** with **TruffleHog** (filesystem + git history)
+- **Key Management** best practices via GitHub Actions secrets
 - Clean **PR workflow** with **Branch Protection**
-- Clear **Fail → Fix → Pass** narrative recruiters love
-
-> Next modules will add **Secret Scanning (TruffleHog)** and **Dependency Scanning (pip-audit)**.
+- Clear **Fail → Fix → Pass** 
 
 ---
 
 ## Current Status
 - [x] Project structure initialized (`src`, `tests`, `workflows`)
 - [x] Demo Python app with basic tests
-- [x] **Semgrep (SAST) integrated** into CI (custom `eval` rule)  
-- [x] **Fix applied** to remove unsafe `eval` usage (pipeline green)
-- [ ] Add TruffleHog (secret scanning)
+- [x] **Semgrep (SAST)** integrated and demonstrated  
+- [x] **TruffleHog (secrets)** integrated for filesystem + git scans
+- [x] Keys handled securely (stored in GitHub secrets, excluded from repo)
 - [ ] Add pip-audit (dependency scanning)
-- [ ] Improve documentation (badges, PR/Issue templates), Release `v0.1`
+- [ ] Polich docs (badges, PR/Issue templates), Release `v0.1`
 
 ---
 
 ## Roadmap (Next Steps)
-1. **TruffleHog (Secrets):** scan worktree + git history; fail PRs on real findings.
-2. **pip-audit (SCA):** audit Python dependencies; fail on High/Critical.
-3. **Polish:** badges, templates, short demo screencast (30–45s), Release `v0.1`.
+1. **pip-audit (SCA):** audit Python dependencies; fail on High/Critical.
+2. **Polish:** badges, templates, demo screencast (30–45s)
+3. **Release:** tag first stable version (`v0.1`).
 
 ---
 
-## How It Works (so far)
-- **Custom Semgrep rule** (`semgrep/semgrep.yml`) flags any use of `eval(...)` as **ERROR**.
-- **GitHub Actions** workflow (`.github/workflows/ci.yml`) runs Semgrep on every **push/PR**.
-- **Branch protection** (on `main`) prevents merging unless checks pass → enforces guardrails.
+## How It Works
+- **Semgrep job:** (`semgrep/semgrep.yml`) blocks unsafe patterns (e.g., `eval(...)`).
+- **TruffleHog jobs:**
+  - **Filesystem:** scans working tree at every PR/push (`--results=verified,unverified,unknown --fail`).
+  - **Git history:** scans commits since previous push (using '--since-commit'), preventing old leaks from blocking new work.
+- **Key Handling:**
+  - Private keys (`Alfred`, `Marina`, `Christina`) are stored in GitHub Actions secrets.
+  - At runtime, they’re written into `keys/` (excluded via `.gitignore` + `trufflehog_exclude_paths.txt`).
+  - Keys are securely shredded after use.
 
 ---
 
 ## Fail → Fix → Pass (Semgrep demo)
-**Intentional vulnerability** (for training only) was introduced and then fixed:
-- **Before (intentional):**
+**Before (intentional):**
   ```python
   # insecure: eval(user_input)
   ```
-- **After (fixed):**
+**After (fixed):**
   ```python
   import ast
 
   def safe_eval_literal(expr: str):
           return ast.literal_eval(expr)  # evaluates only safe Python literals
   ```
-**PR flow:**
-1. Open PR with the intentional `eval` → CI fails (Semgrep catches it).
-2. Commit the fix (replace/remove `eval`) → CI turns green.
-3. Merge to `main` (protected branch).
+**Workflow:**
+1. PR with `eval` → CI fails.
+2. Fix applied (`ast.literal_eval`) → CI passes.
+3. Merge allowed to `main`.
 
 This demonstrates a real DevSecOps guardrail: unsafe code can’t reach `main`.
+
+---
+
+## Fail → Fix → Pass (TruffleHog demo)
+**Before (intentional):**
+```
+# fake_secret.txt
+-----BEGIN RSA PRIVATE KEY-----
+MIIBOQIBAAJAXW...
+```
+**After (fixed):**
+- File removed from repo.
+- Runtime keys generated securely from GitHub Secrets.
+- `keys/**` excluded from repo & TruffleHog scan.
+
+**Workflow:**
+1. Push with fake key → **TruffleHog fails** pipeline.
+2. Keys moved to **GitHub Secrets** → pipeline passes.
 
 ---
 
@@ -88,10 +111,21 @@ Run demo tests locally:
 python3 -m tests.test_app
 # or, with pytest:
 # pip install pytest
-# pytest -v
+pytest -v
 ```
 ![tests_locally](docs/img/tests_locally.png)
 
+Run TruffleHog locally:
+```
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail 
+```
+![trufflehog_git_locally](docs/img/trufflehog_git_locally.png)
+
+```
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest filesystem /repo  --exclude-paths=/trufflehog_exclude_paths.txt --results=verified,unverified,unknown --fail 
+
+```
+![trufflehog_filesystem_locally](docs/img/trufflehog_filesystem_locally.png)
 ---
 
 ## Project Structure
@@ -103,8 +137,11 @@ devsecops-ci-pipeline-demo/
 │  └─ test_app.py
 ├─ semgrep/                  # SAST rules (Semgrep)
 │  └─ semgrep.yml
-├─ .github/workflows         # CI/CD configuration (GitHub Actions)
+├─ .github/workflows         # CI/CD (GitHub Actions)
 │  └─ ci.yml
+├─ docs/img/                 # Screenshots
+├─ .gitignore                # excludes runtime keys
+├─ trufflehog_exclude_paths.txt
 ├─ README.md
 └─ requirements.txt
 ```
@@ -112,13 +149,19 @@ devsecops-ci-pipeline-demo/
 ---
 
 ## Screenshots
-Actions (Fail) – Semgrep flags `eval` on the first PR
+- **Semgrep (Fail)** 
 ![Semgrep fail example](docs/img/semgrep-fail.png)
 
-Actions (Pass) – After fix, pipeline turns green
+- **Semgrep (Pass)** 
 ![Semgrep pass example](docs/img/semgrep-pass.png)
 
-PR view – “Checks failed” → “All checks have passed”
+- **TruffleHog(Fail)**
+![TruffleHog fail example](docs/img/trufflehog_fail.png)
+
+- **TruffleHog(Pass)**
+![TruffleHog pass example](docs/img/trufflehog_pass.png)
+
+- **PR Checks** – “Checks failed” → “All checks have passed”
 ![PR checks failed](docs/img/pr-checks-fail.png)
 ![PR checks passed](docs/img/pr-checks-pass.png)
 
@@ -126,25 +169,22 @@ PR view – “Checks failed” → “All checks have passed”
 
 ## Why This Project?
 
-Modern delivery needs speed and security.
-This repo shows how to shift left and automate checks so issues are caught before merging — resulting in safer, faster delivery.
-
-This is a living demo — new modules (secret scanning, dependency scanning) will be added to evolve the pipeline step by step.
+Modern delivery needs speed **and** security.
+This repo shows how to **shift security left** and enforce guardrails directly in CI/CD — blocking unsafe patterns and secret leaks before they ever reach `main`.
 
 ---
 
 ## Branch Protection
 
-`Settings → Branches → Add rule (main)`
-Recommended:
+Recommended settings for `main`:
 
 ✅ Require a pull request before merging
 
-✅ Require status checks to pass (select the Semgrep job)
+✅ Require status checks to pass (Semgrep+TruffleHog jobs).
 
 (Optional) ✅ Require branches to be up to date before merging
 
-This ensures no direct pushes and no merges without green checks.
+This ensures **no direct pushes** and **no merges without green checks**.
 
 ---
 
