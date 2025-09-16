@@ -1,8 +1,10 @@
 # src/app.py
 import ast
 
+
 def hello(name: str) -> str:
     return f"Hello, {name}!"
+
 
 def safe_eval_literal(expr: str):
     """

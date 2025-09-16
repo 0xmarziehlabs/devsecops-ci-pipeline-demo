@@ -31,14 +31,14 @@ A minimal repository that showcases:
 - **Secret Scanning** with **TruffleHog** (filesystem + git history)
 - **Key Management** best practices via GitHub Actions secrets
 - Clean **PR workflow** with **Branch Protection**
-- Clear **Fail → Fix → Pass** 
+- Clear **Fail → Fix → Pass**
 
 ---
 
 ## Current Status
 - [x] Project structure initialized (`src`, `tests`, `workflows`)
 - [x] Demo Python app with basic tests
-- [x] **Semgrep (SAST)** integrated and demonstrated  
+- [x] **Semgrep (SAST)** integrated and demonstrated
 - [x] **TruffleHog (secrets)** integrated for filesystem + git scans
 - [x] Keys handled securely (stored in GitHub secrets, excluded from repo)
 - [x] Add scheduled TruffleHog scan on main (verified-only)
@@ -59,7 +59,7 @@ A minimal repository that showcases:
   - **Filesystem scan:** scans working tree at every PR/push (`--results=verified,unverified,unknown --fail`).
   - **Git history scan:** scans commits since previous push (using '--since-commit'), preventing old leaks from blocking new work.
   - **Weekly scheduled scan on `main`:** runs every Monday, scanning the full history but **fails only on verified secrets** → reduces false positives while ensuring repo stays clean over time.
-  - **pip-audit job:** (`pip-audit` Action step) audits `requirements.txt` against the Python Packaging Advisory DB. 
+  - **pip-audit job:** (`pip-audit` Action step) audits `requirements.txt` against the Python Packaging Advisory DB.
     → Fails CI if vulnerable dependencies are detected.
 - **Key Handling:**
   - Private keys (`Alfred`, `Marina`, `Christina`) are stored in GitHub Actions secrets.
@@ -120,12 +120,12 @@ pytest -v
 
 Run TruffleHog locally:
 ```
-sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail 
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail
 ```
 ![trufflehog_git_locally](docs/img/trufflehog_git_locally1.png)
 
 ```
-sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest filesystem /repo  --exclude-paths=/trufflehog_exclude_paths.txt --results=verified,unverified,unknown --fail 
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest filesystem /repo  --exclude-paths=/trufflehog_exclude_paths.txt --results=verified,unverified,unknown --fail
 
 ```
 ![trufflehog_filesystem_locally](docs/img/trufflehog_filesystem_locally1.png)
@@ -152,10 +152,10 @@ devsecops-ci-pipeline-demo/
 ---
 
 ## Screenshots
-- **Semgrep (Fail)** 
+- **Semgrep (Fail)**
 ![Semgrep fail example](docs/img/semgrep-fail.png)
 
-- **Semgrep (Pass)** 
+- **Semgrep (Pass)**
 ![Semgrep pass example](docs/img/semgrep-pass.png)
 
 - **TruffleHog(Fail)**
@@ -164,7 +164,7 @@ devsecops-ci-pipeline-demo/
 - **TruffleHog(Pass)**
 ![TruffleHog pass example](docs/img/trufflehog_pass.png)
 
-- **TruffleHog_Scan_weekly(pass):** 
+- **TruffleHog_Scan_weekly(pass):**
 ![TruffleHog_Weekly pass example](docs/img/trufflehog_weekly_scan.png)
 
 - **pip-audit(pass):** – reports no known vulnerabilities
@@ -181,7 +181,7 @@ devsecops-ci-pipeline-demo/
 Modern delivery needs speed **and** security.
 This repo shows how to **shift security left** and enforce guardrails directly in CI/CD — blocking unsafe patterns and secret leaks before they ever reach `main`.
 
-Together, Semgrep (SAST), TruffleHog (secret scanning), and pip-audit (SCA) demonstrate a layered DevSecOps approach: 
+Together, Semgrep (SAST), TruffleHog (secret scanning), and pip-audit (SCA) demonstrate a layered DevSecOps approach:
 catching code issues, secret leaks, and vulnerable dependencies before merge.
 
 ---
