@@ -23,7 +23,7 @@ repos:
     hooks:
       - id: gitleaks
         name: Detect hardcoded secrets (staged)
-        # formal entry gitleaks: gitleaks git --pre-commit --redact --staged --verbose
+        #formal entry gitleaks: gitleaks git --pre-commit --redact --staged --verbose
         args:
           - "--no-banner"
           - "--config=.gitleaks.toml"
