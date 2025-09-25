@@ -1,3 +1,4 @@
+# .github/workflow/ci.yml
 name: CI - Security Checks
 
 on:
