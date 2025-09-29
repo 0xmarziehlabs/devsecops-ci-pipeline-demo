@@ -122,15 +122,6 @@ MIIBOQIBAAJAXW...
 ```text
 tests/accidental_secret.txt
 -----Sample_Alfreds-private-key.pem-----
------BEGIN RSA PRIVATE KEY-----
-MIIBOQIBAAJAXWRPQyGlEY+SXz8Uslhe+MLjTgWd8lf/nA0hgCm9JFKC1tq1S73c
-Q9naClNXsMqY7pwPt1bSY8jYRqHHbdoUvwIDAQABAkAfJkz1pCwtfkig8iZSEf2j
-VUWBiYgUA9vizdJlsAZBLceLrdk8RZF2YOYCWHrpUtZVea37dzZJe99Dr53K0UZx
-AiEAtyHQBGoCVHfzPM//a+4tv2ba3tx9at+3uzGR86YNMzcCIQCCjWHcLW/+sQTW
-OXeXRrtxqHPp28ir8AVYuNX0nT1+uQIgJm158PMtufvRlpkux78a6mby1oD98Ecx
-jp5AOhhF/NECICyHsQN69CJ5mt6/R01wMOt5u9/eubn76rbyhPgk0h7xAiEAjn6m
-EmLwkIYD9VnZfp9+2UoWSh0qZiTIHyNwFpJH78o=
------END RSA PRIVATE KEY-----
 ```
 
 **After (fixed):**
@@ -141,7 +132,6 @@ EmLwkIYD9VnZfp9+2UoWSh0qZiTIHyNwFpJH78o=
 1.  Try to commit a staged file with a fake secret → **pre-commit blocks** the commit (Gitleaks finds it).
 2. Comment/remove the fake secret → commit succeeds.
 3. CI runs the same hooks (via `pre-commit/action`) to enforce rules repo-wide.
-
 
 ---
 
@@ -158,7 +148,7 @@ pytest -v
 
 Run TruffleHog locally:
 ```
-sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail 
 ```
 ![trufflehog_git_locally](docs/img/trufflehog_git_locally1.png)
 
@@ -208,6 +198,7 @@ devsecops-ci-pipeline-demo/
 ![Semgrep fail example](docs/img/semgrep-fail.png)
 
 - **Semgrep (Pass)**
+
 ![Semgrep pass example](docs/img/semgrep-pass.png)
 
 - **TruffleHog(Fail)**
@@ -220,6 +211,7 @@ devsecops-ci-pipeline-demo/
 ![TruffleHog_Weekly pass example](docs/img/trufflehog_weekly_scan.png)
 
 - **pip-audit(pass):** – reports no known vulnerabilities
+
 ![pip-audit pass example](docs/img/pip_audit_scan_pass_second.png)
 
 - **PR Checks** – “Checks failed” → “All checks have passed”

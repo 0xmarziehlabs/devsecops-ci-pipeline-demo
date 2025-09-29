@@ -142,7 +142,9 @@ jobs:
       - name: Determine branch name
         run: |
           echo "BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}" >> $GITHUB_ENV
+
           echo "Branch to scan: ${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          echo "Branch to scan: ${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"    
 
       - name: Compute merge-base for PR
         if: github.event_name == 'pull_request'
