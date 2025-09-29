@@ -16,6 +16,7 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 - [How It Works](#how-it-works-so-far)
 - [Fail → Fix → Pass (Semgrep demo)](#fail--fix--pass-semgrep-demo)
 - [Fail → Fix → Pass (TruffleHog demo)](#fail--fix--pass-trufflehog-demo)
+- [Fail → Fix → Pass (pre-commit demo)](#fail--fix--pass-pre-commit-demo)
 - [Local Usage](#local-usage)
 - [Project Structure](#project-structure)
 - [Screenshots](#screenshots)
@@ -31,19 +32,20 @@ A minimal repository that showcases:
 - **Secret Scanning** with **TruffleHog** (filesystem + git history)
 - **Key Management** best practices via GitHub Actions secrets
 - Clean **PR workflow** with **Branch Protection**
-- Clear **Fail → Fix → Pass** 
+- Clear **Fail → Fix → Pass**
 
 ---
 
 ## Current Status
 - [x] Project structure initialized (`src`, `tests`, `workflows`)
 - [x] Demo Python app with basic tests
-- [x] **Semgrep (SAST)** integrated and demonstrated  
+- [x] **Semgrep (SAST)** integrated and demonstrated
 - [x] **TruffleHog (secrets)** integrated for filesystem + git scans
 - [x] Keys handled securely (stored in GitHub secrets, excluded from repo)
 - [x] Add scheduled TruffleHog scan on main (verified-only)
 - [x] Add pip-audit (dependency scanning)
-- [ ] Polich docs (badges, PR/Issue templates), Release `v0.1`
+- [x] **Pre-commit hooks** (Black, YAML/merge checks, Gitleaks staged) + enforced in CI
+- [ ] Polish docs (badges, PR/Issue templates), Release `v0.1`
 
 ---
 
@@ -59,12 +61,19 @@ A minimal repository that showcases:
   - **Filesystem scan:** scans working tree at every PR/push (`--results=verified,unverified,unknown --fail`).
   - **Git history scan:** scans commits since previous push (using '--since-commit'), preventing old leaks from blocking new work.
   - **Weekly scheduled scan on `main`:** runs every Monday, scanning the full history but **fails only on verified secrets** → reduces false positives while ensuring repo stays clean over time.
-- **pip-audit job:** (`pip-audit` Action step) audits `requirements.txt` against the Python Packaging Advisory DB. 
+  - **pip-audit job:** (`pip-audit` Action step) audits `requirements.txt` against the Python Packaging Advisory DB.
     → Fails CI if vulnerable dependencies are detected.
 - **Key Handling:**
   - Private keys (`Alfred`, `Marina`, `Christina`) are stored in GitHub Actions secrets.
   - At runtime, they’re written into `keys/` (excluded via `.gitignore` + `trufflehog_exclude_paths.txt`).
   - Keys are securely shredded after use.
+- **Pre-commit hooks:**
+  - Run locally on staged files before every commit (`pre-commit install`).
+  - Includes formatters (Black), sanity checks (YAML, merge conflicts), and **Gitleaks**.
+  - Prevents committing secrets by blocking staged leaks.
+- **CI Pre-commit job:**
+  - Runs all hooks on every push/PR (`pre-commit/action`).
+  - Guarantees consistent enforcement across developer machines and CI.
 
 ---
 
@@ -107,6 +116,25 @@ MIIBOQIBAAJAXW...
 
 ---
 
+## Fail → Fix → Pass (Pre-commit demo)
+
+**Before (intentional):**
+```text
+tests/accidental_secret.txt
+-----Sample_Alfreds-private-key.pem-----
+```
+
+**After (fixed):**
+- remove the secret
+
+**Workflow:**
+
+1.  Try to commit a staged file with a fake secret → **pre-commit blocks** the commit (Gitleaks finds it).
+2. Comment/remove the fake secret → commit succeeds.
+3. CI runs the same hooks (via `pre-commit/action`) to enforce rules repo-wide.
+
+---
+
 ## Local Usage
 
 Run demo tests locally:
@@ -120,31 +148,45 @@ pytest -v
 
 Run TruffleHog locally:
 ```
-sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail 
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail
 ```
 ![trufflehog_git_locally](docs/img/trufflehog_git_locally1.png)
 
 ```
-sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest filesystem /repo  --exclude-paths=/trufflehog_exclude_paths.txt --results=verified,unverified,unknown --fail 
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest filesystem /repo  --exclude-paths=/trufflehog_exclude_paths.txt --results=verified,unverified,unknown --fail
 
 ```
 ![trufflehog_filesystem_locally](docs/img/trufflehog_filesystem_locally1.png)
+
+Run Pre-commit locally:
+```
+pre-commit run --hook-stage manual gitleaks-docker-dir  -v
+```
+![pre-commit_manual_locally](docs/img/precommit-gitleaks_manual_fail.png)
+
+```
+pre-commit run --all-files
+```
+![pre-commit_all_locally](docs/img/precommit_all.png)
+
 ---
 
 ## Project Structure
 ```
 devsecops-ci-pipeline-demo/
-├─ src/                      # Demo application code
+├─ src/                           # Demo application code
 │  └─ app.py
-├─ tests/                    # Basic tests for the demo app
+├─ tests/                         # Basic tests for the demo app
 │  └─ test_app.py
-├─ semgrep/                  # SAST rules (Semgrep)
+├─ semgrep/                       # SAST rules (Semgrep)
 │  └─ semgrep.yml
-├─ .github/workflows         # CI/CD (GitHub Actions)
+├─ .github/workflows              # CI/CD (GitHub Actions)
 │  └─ ci.yml
-├─ docs/img/                 # Screenshots
-├─ .gitignore                # excludes runtime keys
-├─ trufflehog_exclude_paths.txt
+├─ docs/img/                      # Screenshots
+├─ .gitignore                     # excludes runtime keys
+├─ trufflehog_exclude_paths.txt   # exclude paths for TruffleHog
+├─ .pre-commit-config.yaml        # Pre-commit hooks config
+├─ .gitleaks.toml                 # Gitleaks config (custom rules + allowlist)
 ├─ README.md
 └─ requirements.txt
 ```
@@ -152,10 +194,11 @@ devsecops-ci-pipeline-demo/
 ---
 
 ## Screenshots
-- **Semgrep (Fail)** 
+- **Semgrep (Fail)**
 ![Semgrep fail example](docs/img/semgrep-fail.png)
 
-- **Semgrep (Pass)** 
+- **Semgrep (Pass)**
+
 ![Semgrep pass example](docs/img/semgrep-pass.png)
 
 - **TruffleHog(Fail)**
@@ -164,16 +207,23 @@ devsecops-ci-pipeline-demo/
 - **TruffleHog(Pass)**
 ![TruffleHog pass example](docs/img/trufflehog_pass.png)
 
-- **TruffleHog_Scan_weekly(pass)** 
+- **TruffleHog_Scan_weekly(pass):**
 ![TruffleHog_Weekly pass example](docs/img/trufflehog_weekly_scan.png)
 
-- **pip-audit(pass)** – reports no known vulnerabilities
+- **pip-audit(pass):** – reports no known vulnerabilities
+
 ![pip-audit pass example](docs/img/pip_audit_scan_pass_second.png)
 
 - **PR Checks** – “Checks failed” → “All checks have passed”
 ![PR checks failed](docs/img/pr-checks-fail.png)
 ![PR checks passed](docs/img/pr-checks-pass.png)
 
+- **Pre-commit (Fail)**
+![Pre-commit fail](docs/img/git_fail_precommit.png)
+
+- **Pre-commit (Pass)**
+![Pre-commit pass](docs/img/git_pass_precommit.png)
+![Pre-commit pass](docs/img/pass_precommit_ci.png)
 ---
 
 ## Why This Project?
@@ -181,7 +231,7 @@ devsecops-ci-pipeline-demo/
 Modern delivery needs speed **and** security.
 This repo shows how to **shift security left** and enforce guardrails directly in CI/CD — blocking unsafe patterns and secret leaks before they ever reach `main`.
 
-Together, Semgrep (SAST), TruffleHog (secret scanning), and pip-audit (SCA) demonstrate a layered DevSecOps approach: 
+Together, Semgrep (SAST), TruffleHog (secret scanning), and pip-audit (SCA) demonstrate a layered DevSecOps approach:
 catching code issues, secret leaks, and vulnerable dependencies before merge.
 
 ---

@@ -1,0 +1,58 @@
+#.pre-commit-config.yaml
+
+repos:
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+        name: Detect hardcoded secrets (staged)
+        #formal entry gitleaks: gitleaks git --pre-commit --redact --staged --verbose
+        args:
+          - "--no-banner"
+          - "--config=.gitleaks.toml"
+        stages: [pre-commit]
+        pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: gitleaks-docker-dir
+        name: Detect hardcoded secrets (dir mode — manual via docker_image)
+        description: Detect hardcoded secrets using Gitleaks
+        entry: ghcr.io/gitleaks/gitleaks:latest
+        args:
+          - "dir"
+          - "--redact"
+          - "--no-banner"
+          - "--config=.gitleaks.toml"
+          - "-v"
+        language: docker_image
+        pass_filenames: false
+        stages: [manual]
+        types_or: [text]
+
+  # - repo: local
+  #   hooks:
+  #    - id: gitleaks-detect
+  #      name: Detect hardcoded secrets (manual detect on repo — old version)
+  #      entry: bash -c ''gitleaks detect --no-git --source . --redact --no-banner --config=.gitleaks.toml'
+  #      language: system
+  #      pass_filenames: false
+  #      stages: [manual] #No run on commit, it runs when called (e.g. pre-commit run --hook-stage manual gitleaks-detect)
+  #      types_or: [text] #Remove binary files for faster scan

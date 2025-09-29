@@ -1,0 +1,40 @@
+#.gitleaks.toml
+
+title = "Gitleaks config for devsecops-ci-pipeline-demo"
+
+[allowlist]
+# Paths that generally don't need scanning (or are binary/images)
+paths = [
+  '^docs/',
+  '^.*\\.(png|jpe?g|gif|svg|ico)$',
+  '^keys/',         # prevent local runtime keys from being flagged if staged
+  '''(^|.*/)\.gitleaks\.toml$''',    # Dont scan config file
+  '''(^|.*/)README\.md$'''               # Dont scan README
+]
+
+# Explicit patterns for training/fake secrets
+regexes = [
+  'FAKE_(SECRET|TOKEN|KEY)'
+]
+
+[[rules]]
+id = "demo-rsa-private-key"
+description = "Detect RSA private key blocks"
+regex = "-----BEGIN RSA PRIVATE KEY-----"
+secretGroup = 0
+tags = ["key","rsa","private-key"]
+
+[[rules]]
+id = "demo-aws-access-key-id"
+description = "Detect AWS Access Key ID (AKIA...)"
+# AKIA + 16 uppercase letters/digits => total length 20
+regex = "AKIA[0-9A-Z]{16}"
+secretGroup = 0
+tags = ["aws","access-key"]
+
+[[rules]]
+id = "demo-github-pat"
+description = "Detect GitHub Personal Access Token (ghp_)"
+regex = "ghp_[0-9A-Za-z]{36}"
+secretGroup = 0
+tags = ["github","token"]
