@@ -16,6 +16,7 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 - [How It Works](#how-it-works-so-far)
 - [Fail → Fix → Pass (Semgrep demo)](#fail--fix--pass-semgrep-demo)
 - [Fail → Fix → Pass (TruffleHog demo)](#fail--fix--pass-trufflehog-demo)
+- [Fail → Fix → Pass (pre-commit demo)](#fail--fix--pass-pre-commit-demo)
 - [Local Usage](#local-usage)
 - [Project Structure](#project-structure)
 - [Screenshots](#screenshots)
@@ -43,7 +44,8 @@ A minimal repository that showcases:
 - [x] Keys handled securely (stored in GitHub secrets, excluded from repo)
 - [x] Add scheduled TruffleHog scan on main (verified-only)
 - [x] Add pip-audit (dependency scanning)
-- [ ] Polich docs (badges, PR/Issue templates), Release `v0.1`
+- [x] **Pre-commit hooks** (Black, YAML/merge checks, Gitleaks staged) + enforced in CI
+- [ ] Polish docs (badges, PR/Issue templates), Release `v0.1`
 
 ---
 
@@ -65,6 +67,13 @@ A minimal repository that showcases:
   - Private keys (`Alfred`, `Marina`, `Christina`) are stored in GitHub Actions secrets.
   - At runtime, they’re written into `keys/` (excluded via `.gitignore` + `trufflehog_exclude_paths.txt`).
   - Keys are securely shredded after use.
+- **Pre-commit hooks:**
+  - Run locally on staged files before every commit (`pre-commit install`).
+  - Includes formatters (Black), sanity checks (YAML, merge conflicts), and **Gitleaks**.
+  - Prevents committing secrets by blocking staged leaks.
+- **CI Pre-commit job:**
+  - Runs all hooks on every push/PR (`pre-commit/action`).
+  - Guarantees consistent enforcement across developer machines and CI.
 
 ---
 
@@ -107,6 +116,26 @@ MIIBOQIBAAJAXW...
 
 ---
 
+## Fail → Fix → Pass (Pre-commit demo)
+
+**Before (intentional):**
+```text
+tests/accidental_secret.txt
+AWS_ACCESS_KEY_ID=AKIA1234567890ABCD
+```
+
+**After (fixed):**
+- remove the secret
+
+**Workflow:**
+
+1.  Try to commit a staged file with a fake secret → **pre-commit blocks** the commit (Gitleaks finds it).
+2. Comment/remove the fake secret → commit succeeds.
+3. CI runs the same hooks (via `pre-commit/action`) to enforce rules repo-wide.
+
+
+---
+
 ## Local Usage
 
 Run demo tests locally:
@@ -129,22 +158,36 @@ sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/tru
 
 ```
 ![trufflehog_filesystem_locally](docs/img/trufflehog_filesystem_locally1.png)
+
+Run Pre-commit locally:
+```
+pre-commit run --hook-stage manual gitleaks-docker-dir  -v
+```
+![pre-commit_manual_locally](docs/img/precommit-gitleaks_manual_fail.png)
+
+```
+pre-commit run --all-files
+```
+![pre-commit_all_locally](docs/img/precommit_all.png)
+
 ---
 
 ## Project Structure
 ```
 devsecops-ci-pipeline-demo/
-├─ src/                      # Demo application code
+├─ src/                           # Demo application code
 │  └─ app.py
-├─ tests/                    # Basic tests for the demo app
+├─ tests/                         # Basic tests for the demo app
 │  └─ test_app.py
-├─ semgrep/                  # SAST rules (Semgrep)
+├─ semgrep/                       # SAST rules (Semgrep)
 │  └─ semgrep.yml
-├─ .github/workflows         # CI/CD (GitHub Actions)
+├─ .github/workflows              # CI/CD (GitHub Actions)
 │  └─ ci.yml
-├─ docs/img/                 # Screenshots
-├─ .gitignore                # excludes runtime keys
-├─ trufflehog_exclude_paths.txt
+├─ docs/img/                      # Screenshots
+├─ .gitignore                     # excludes runtime keys
+├─ trufflehog_exclude_paths.txt   # exclude paths for TruffleHog
+├─ .pre-commit-config.yaml        # Pre-commit hooks config
+├─ .gitleaks.toml                 # Gitleaks config (custom rules + allowlist)
 ├─ README.md
 └─ requirements.txt
 ```
@@ -174,6 +217,12 @@ devsecops-ci-pipeline-demo/
 ![PR checks failed](docs/img/pr-checks-fail.png)
 ![PR checks passed](docs/img/pr-checks-pass.png)
 
+- **Pre-commit (Fail)**
+![Pre-commit fail](docs/img/git_fail_precommit.png)
+
+- **Pre-commit (Pass)**
+![Pre-commit pass](docs/img/git_pass_precommit.png)
+![Pre-commit pass](docs/img/pass_precommit_ci.png)
 ---
 
 ## Why This Project?
