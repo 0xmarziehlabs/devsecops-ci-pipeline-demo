@@ -148,7 +148,7 @@ pytest -v
 
 Run TruffleHog locally:
 ```
-sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail 
+sudo docker run --rm -v "$PWD":/repo -v "$PWD/trufflehog_exclude_paths.txt":/trufflehog_exclude_paths.txt ghcr.io/trufflesecurity/trufflehog:latest git file:///repo  --since-commit HEAD --results=verified,unverified,unknown --fail
 ```
 ![trufflehog_git_locally](docs/img/trufflehog_git_locally1.png)
 
