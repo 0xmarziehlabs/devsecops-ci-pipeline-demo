@@ -1,12 +1,16 @@
+from flask import Flask, request
 import sqlite3
 
+app = Flask(__name__)
 
-def get_user(username):
+
+@app.route("/user")
+def get_user():
+    username = request.args.get("username")  # user-controlled
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
 
-    # ❌ Vulnerable: SQL Injection
     query = f"SELECT * FROM users WHERE username = '{username}'"
-    cursor.execute(query)
+    cursor.execute(query)  # SQL Injection
 
-    return cursor.fetchall()
+    return str(cursor.fetchall())
