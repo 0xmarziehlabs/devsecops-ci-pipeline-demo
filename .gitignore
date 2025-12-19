@@ -208,3 +208,5 @@ __marimo__/
 
 # never commit runtime keys
 keys/
+db-python/
+*.sarif
