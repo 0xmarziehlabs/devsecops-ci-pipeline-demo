@@ -35,6 +35,7 @@ A minimal repository that showcases:
 - Clean **PR workflow** with **Branch Protection**
 - Clear **Fail → Fix → Pass** security demonstrations
 
+
 ---
 
 ## Current Status
