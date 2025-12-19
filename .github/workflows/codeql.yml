@@ -1,0 +1,44 @@
+name: CodeQL Analysis
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    # Weekly deep scan (recommended by GitHub)
+    - cron: '0 3 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze (CodeQL)
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write   # REQUIRED to upload SARIF
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+
+    steps:
+    # 1) Checkout source code
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2) Initialize CodeQL
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-and-quality
+
+    # 3) Autobuild (for compiled langs for Go / Java / C++ – no op for Python)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+
+    # 4) Run CodeQL analysis
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
