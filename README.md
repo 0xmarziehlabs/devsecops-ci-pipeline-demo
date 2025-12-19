@@ -28,11 +28,13 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 
 ## What This Is
 A minimal repository that showcases:
-- **SAST** with **Semgrep** (custom rule)
+- **SAST** with **Semgrep** (fast, rule-based checks)
+- **Deep SAST** with **CodeQL** (semantic, data-flow analysis)
 - **Secret Scanning** with **TruffleHog** (filesystem + git history)
 - **Key Management** best practices via GitHub Actions secrets
 - Clean **PR workflow** with **Branch Protection**
-- Clear **Fail → Fix → Pass**
+- Clear **Fail → Fix → Pass** security demonstrations
+
 
 ---
 
@@ -45,6 +47,7 @@ A minimal repository that showcases:
 - [x] Add scheduled TruffleHog scan on main (verified-only)
 - [x] Add pip-audit (dependency scanning)
 - [x] **Pre-commit hooks** (Black, YAML/merge checks, Gitleaks staged) + enforced in CI
+- [x] **CodeQL (deep SAST)** integrated (data-flow analysis, SARIF upload)
 - [ ] Polish docs (badges, PR/Issue templates), Release `v0.1`
 
 ---
@@ -74,6 +77,12 @@ A minimal repository that showcases:
 - **CI Pre-commit job:**
   - Runs all hooks on every push/PR (`pre-commit/action`).
   - Guarantees consistent enforcement across developer machines and CI.
+- **CodeQL (Deep SAST):**
+  - Performs semantic, data-flow–based static analysis.
+  - Detects injection flaws (SQLi, XSS, RCE, SSRF, etc.).
+  - Uploads results in SARIF format to GitHub Code Scanning.
+  - Runs on pull requests, pushes to `main`, and weekly scheduled scans.
+
 
 ---
 
