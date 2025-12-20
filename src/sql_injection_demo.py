@@ -11,6 +11,6 @@ def get_user():
     cursor = conn.cursor()
 
     query = f"SELECT * FROM users WHERE username = '{username}'"
-    cursor.execute(query)  #  SQL Injection
+    cursor.execute(query)  # SQL Injection
 
     return str(cursor.fetchall())
