@@ -17,6 +17,7 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 - [Fail → Fix → Pass (Semgrep demo)](#fail--fix--pass-semgrep-demo)
 - [Fail → Fix → Pass (TruffleHog demo)](#fail--fix--pass-trufflehog-demo)
 - [Fail → Fix → Pass (pre-commit demo)](#fail--fix--pass-pre-commit-demo)
+- [Fail → Fix → Pass (CodeQL demo)](#fail--fix--pass-codeql-demo)
 - [Local Usage](#local-usage)
 - [Project Structure](#project-structure)
 - [Screenshots](#screenshots)
