@@ -19,6 +19,7 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 - [Fail → Fix → Pass (pip-audit (SCA) demo)](#fail--fix--pass-pip-audit-sca-demo)
 - [Fail → Fix → Pass (TruffleHog demo)](#fail--fix--pass-trufflehog-demo)
 - [Fail → Fix → Pass (pre-commit demo)](#fail--fix--pass-pre-commit-demo)
+- [Fail → Fix → Pass (CodeQL demo)](#fail--fix--pass-codeql-demo)
 - [Local Usage](#local-usage)
 - [Project Structure](#project-structure)
 - [Screenshots (CI & Developer Feedback)](#screenshots-ci--developer-feedback)
