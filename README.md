@@ -15,12 +15,13 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 - [Roadmap (Next Steps)](#roadmap-next-steps)
 - [How It Works](#how-it-works-so-far)
 - [Fail → Fix → Pass (Semgrep demo)](#fail--fix--pass-semgrep-demo)
+- [Fail → Fix → Pass (CodeQL demo)](#fail--fix--pass-codeql-demo)
+- [Fail → Fix → Pass (pip-audit (SCA) demo)](#fail--fix--pass-pip-audit--SCA--demo)
 - [Fail → Fix → Pass (TruffleHog demo)](#fail--fix--pass-trufflehog-demo)
 - [Fail → Fix → Pass (pre-commit demo)](#fail--fix--pass-pre-commit-demo)
-- [Fail → Fix → Pass (CodeQL demo)](#fail--fix--pass-codeql-demo)
 - [Local Usage](#local-usage)
 - [Project Structure](#project-structure)
-- [Screenshots](#screenshots)
+- [Screenshots (CI & Developer Feedback)](#screenshots--CI--&--Developer--Feedback)
 - [Why This Project?](#why-this-project)
 - [Branch Protection](#branch-protection)
 - [License](#license)
@@ -28,6 +29,7 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 ---
 
 ## What This Is
+
 A minimal repository that showcases:
 - **SAST** with **Semgrep** (pattern-based, fast)
 - **Deep SAST** with **CodeQL** (semantic & data-flow analysis)
@@ -63,6 +65,7 @@ A minimal repository that showcases:
 ## Roadmap (Enterprise-Oriented)
 
 ### Phase 1 — Stabilization & Release Readiness
+
 Focus: baseline quality, trust, and reproducibility.
 
 - Finalize documentation structure (README polish, clear sectioning, consistent terminology)
@@ -74,6 +77,7 @@ Focus: baseline quality, trust, and reproducibility.
 ---
 
 ### Phase 2 — Security Hardening (Pipeline & Runtime)
+
 Focus: reducing blast radius and enforcing least privilege.
 
 - Harden GitHub Actions workflows:
@@ -90,6 +94,7 @@ Focus: reducing blast radius and enforcing least privilege.
 ---
 
 ### Phase 3 — Supply Chain & Integrity Controls
+
 Focus: protecting dependencies, artifacts, and build trust.
 
 - Expand SCA coverage:
@@ -103,6 +108,7 @@ Focus: protecting dependencies, artifacts, and build trust.
 ---
 
 ### Phase 4 — Security Observability & Governance
+
 Focus: visibility, accountability, and long-term maintainability.
 
 - Improve security signal visibility:
@@ -117,6 +123,7 @@ Focus: visibility, accountability, and long-term maintainability.
 ---
 
 ### Phase 5 — Scalability & Real-World Adaptation
+
 Focus: demonstrating applicability beyond a demo repository.
 
 - Provide guidance for adapting the pipeline to:
@@ -128,7 +135,8 @@ Focus: demonstrating applicability beyond a demo repository.
 ---
 
 > This roadmap reflects how a DevSecOps pipeline evolves in real-world engineering organizations:
-> starting with guardrails, progressing through hardening and governance, and scaling with clarity rather than complexity.
+
+starting with guardrails, progressing through hardening and governance, and scaling with clarity rather than complexity.
 
 
 ---
@@ -233,13 +241,13 @@ This pipeline is intentionally:
 
 It reflects how DevSecOps pipelines operate in real engineering organizations — not just demo environments.
 
-
-
 ---
 
 ## Fail → Fix → Pass (Semgrep demo)
 
-**Intent:** prevent unsafe language-level constructs from reaching `main`.
+**Intent:**
+
+prevent unsafe language-level constructs from reaching `main`.
 
 **Before (intentional):**
   ```python
@@ -258,13 +266,69 @@ It reflects how DevSecOps pipelines operate in real engineering organizations �
 3. Semgrep passes → Merge to `main`is allowed
 
 **Security outcome:**
+
 Basic code injection risks are eliminated early through fast, pattern-based SAST.
+
+---
+
+## Fail → Fix → Pass (CodeQL demo)
+
+**Intent:**
+
+detect complex, data-flow–driven vulnerabilities that pattern-based tools may miss.
+
+**Before (intentional):**
+- Code introduces a data-flow path from user-controlled input to a sensitive sink
+- Issue is not trivially detectable via pattern matching
+
+**Workflow:**
+1. Pull request triggers CodeQL analysis
+2. CodeQL identifies a vulnerable data-flow path
+3. Finding is uploaded as SARIF and surfaced in GitHub Code Scanning
+4. Pull request is blocked until the issue is remediated
+
+**After (fixed):**
+- Vulnerable flow is eliminated
+- CodeQL re-run reports no findings
+
+**Security outcome:**
+
+High-impact vulnerabilities are prevented from merging, with findings visible and auditable via GitHub’s native security UI.
+
+---
+
+## Fail → Fix → Pass (pip-audit (SCA) demo)
+
+**Intent:**
+
+prevent known vulnerable third-party Python dependencies from being introduced into the codebase.
+
+**Before (scenario-based):**
+- A dependency with a known CVE (or a vulnerable version range) is added to `requirements.txt`.
+- This introduces supply-chain risk even if the application code is otherwise clean.
+
+**Workflow:**
+1. Pull request updates `requirements.txt`.
+2. CI runs `pip-audit` against the dependency set.
+3. If a vulnerable package/version is detected, the job fails and the PR is blocked.
+4. The developer remediates by upgrading, pinning, or replacing the dependency.
+5. `pip-audit` re-runs automatically and passes once no known vulnerable dependencies remain.
+
+**After (fixed):**
+- Vulnerable dependency version is replaced with a patched version (or an alternative dependency).
+- The pipeline becomes green and merge is allowed.
+
+**Security outcome:**
+
+Known vulnerable dependencies are prevented from reaching `main`, reducing supply-chain risk through automated, repeatable enforcement.
 
 ---
 
 ## Fail → Fix → Pass (TruffleHog demo)
 
-**Intent:** prevent credential leakage into version control.
+**Intent:**
+
+prevent credential leakage into version control.
 
 **Before (intentional):**
 ```
@@ -282,13 +346,16 @@ MIIBOQIBAAJAXW...
 2. Secrets moved to GitHub Actions Secrets → pipeline passes
 
 **Security outcome:**
+
 No long-lived credentials are stored in source control; secret exposure is blocked automatically.
 
 ---
 
 ## Fail → Fix → Pass (Pre-commit demo)
 
-**Intent:** stop security issues before they even reach CI.
+**Intent:**
+
+stop security issues before they even reach CI.
 
 **Before (intentional):**
 ```text
@@ -300,36 +367,13 @@ tests/accidental_secret.txt
 - Secret removed from staged files
 
 **Workflow:**
-
 1. Developer attempts to commit a staged secret → **pre-commit blocks the commit** (Gitleaks finds it)
 2. Secret is removed → commit succeeds
 3. CI re-runs the same hooks to ensure enforcement consistency (via `pre-commit/action`)
 
 **Security outcome:**
+
 Security rules are enforced as policy, not convention — locally and in CI.
-
----
-
-## Fail → Fix → Pass (CodeQL demo)
-
-**Intent:** detect complex, data-flow–driven vulnerabilities that pattern-based tools may miss.
-
-**Before (intentional):**
-- Code introduces a data-flow path from user-controlled input to a sensitive sink
-- Issue is not trivially detectable via pattern matching
-
-**Workflow:**
-1. Pull request triggers CodeQL analysis
-2. CodeQL identifies a vulnerable data-flow path
-3. Finding is uploaded as SARIF and surfaced in GitHub Code Scanning
-4. Pull request is blocked until the issue is remediated
-
-**After (fixed):**
-- Vulnerable flow is eliminated
-- CodeQL re-run reports no findings
-
-**Security outcome:**
-High-impact vulnerabilities are prevented from merging, with findings visible and auditable via GitHub’s native security UI.
 
 ---
 
@@ -404,6 +448,7 @@ They demonstrate how security issues are detected early, enforced automatically,
 ### Semgrep — Pattern-based SAST
 
 **Semgrep (Fail)**
+
 This screenshot shows a pull request failing due to the presence of an unsafe coding pattern (`eval`).
 Semgrep blocks the change early in the pipeline and provides immediate feedback to the developer.
 
@@ -411,6 +456,7 @@ Semgrep blocks the change early in the pipeline and provides immediate feedback 
 ![Semgrep fail example](docs/img/semgrep-fail.png)
 
 **Semgrep (Pass)**
+
 After refactoring the code to remove the unsafe construct, Semgrep reports no findings and the pipeline passes.
 
 ![Semgrep pass example](docs/img/semgrep-pass.png)
@@ -420,16 +466,19 @@ After refactoring the code to remove the unsafe construct, Semgrep reports no fi
 ### TruffleHog — Secret Detection
 
 **TruffleHog (Fail)**
+
 This screenshot demonstrates TruffleHog detecting a leaked private key in the repository, causing the pipeline to fail and preventing secret exposure.
 
 ![TruffleHog fail example](docs/img/trufflehog_fail.png)
 
 **TruffleHog (Pass)**
+
 After removing the secret from the repository and handling keys securely via GitHub Actions secrets, TruffleHog reports a clean scan and the pipeline succeeds.
 
 ![TruffleHog pass example](docs/img/trufflehog_pass.png)
 
 **TruffleHog (Weekly Scan — pass)**
+
 This screenshot shows the scheduled weekly scan on the `main` branch.
 The scan covers the full git history and is configured to fail only on verified secrets, balancing security coverage with false-positive control.
 
@@ -440,6 +489,7 @@ The scan covers the full git history and is configured to fail only on verified 
 ### Dependency Security – pip-audit
 
 **pip-audit (pass)**
+
 This screenshot shows `pip-audit` reporting no known vulnerabilities in Python dependencies.
 Dependency security is enforced as part of the CI pipeline alongside application-level checks.
 
@@ -450,11 +500,13 @@ Dependency security is enforced as part of the CI pipeline alongside application
 ### CodeQL – Deep SAST (Pull Request Gate)
 
 **CodeQL (PR Gate — Fail → Pass)**
+
 These screenshots demonstrate CodeQL operating as a mandatory security gate during pull requests.
 
 > Note: In this repository, CodeQL enforcement is reflected at the pull request level via required status checks, as shown below.
 
 **CodeQL (Fail)**
+
 When CodeQL detects a security issue:
 - The pull request is marked as **checks failed**
 - Merge to `main` is blocked
@@ -463,6 +515,7 @@ When CodeQL detects a security issue:
 ![PR checks failed (CodeQL fail)](docs/img/codeql-pr-fail3-sql.png)
 
 **CodeQL (Pass)**
+
 After the issue is remediated:
 - CodeQL re-runs automatically on the updated commit
 - The security check passes
@@ -475,11 +528,13 @@ After the issue is remediated:
 ### Developer Guardrails – Pre-commit
 
 **Pre-commit (Fail)**
+
 This screenshot shows a local commit being blocked by pre-commit hooks after detecting a staged secret via Gitleaks.
 
 ![Pre-commit fail](docs/img/git_fail_precommit.png)
 
 **Pre-commit (Pass)**
+
 After removing the secret, the commit succeeds locally.
 The same hooks are re-executed in CI to ensure consistent enforcement across all contributors.
 
@@ -534,4 +589,5 @@ These protections ensure:
 ---
 
 ## License
+
 This project is licensed under the MIT License.
