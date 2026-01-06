@@ -12,16 +12,16 @@ Demonstrates how to build a **secure CI/CD pipeline** by integrating security ch
 ## Table of Contents
 - [What This Is](#what-this-is)
 - [Current Status](#current-status)
-- [Roadmap (Next Steps)](#roadmap-next-steps)
+- [Roadmap (Enterprise-Oriented)](#roadmap-enterprise-oriented)
 - [How It Works](#how-it-works-so-far)
 - [Fail → Fix → Pass (Semgrep demo)](#fail--fix--pass-semgrep-demo)
 - [Fail → Fix → Pass (CodeQL demo)](#fail--fix--pass-codeql-demo)
-- [Fail → Fix → Pass (pip-audit (SCA) demo)](#fail--fix--pass-pip-audit--SCA--demo)
+- [Fail → Fix → Pass (pip-audit (SCA) demo)](#fail--fix--pass-pip-audit-sca-demo)
 - [Fail → Fix → Pass (TruffleHog demo)](#fail--fix--pass-trufflehog-demo)
 - [Fail → Fix → Pass (pre-commit demo)](#fail--fix--pass-pre-commit-demo)
 - [Local Usage](#local-usage)
 - [Project Structure](#project-structure)
-- [Screenshots (CI & Developer Feedback)](#screenshots--CI--&--Developer--Feedback)
+- [Screenshots (CI & Developer Feedback)](#screenshots-ci--developer-feedback)
 - [Why This Project?](#why-this-project)
 - [Branch Protection](#branch-protection)
 - [License](#license)
@@ -135,7 +135,6 @@ Focus: demonstrating applicability beyond a demo repository.
 ---
 
 > This roadmap reflects how a DevSecOps pipeline evolves in real-world engineering organizations:
-
 starting with guardrails, progressing through hardening and governance, and scaling with clarity rather than complexity.
 
 
