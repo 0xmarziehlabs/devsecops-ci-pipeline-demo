@@ -10,7 +10,6 @@ def get_user():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
 
-    query = f"SELECT * FROM users WHERE username = '" + username + "';"
-    cursor.executescript(query)  # SQL Injection
-
+    # ✅ SAFE: Parameterized query (prevents SQL Injection)
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     return str(cursor.fetchall())
