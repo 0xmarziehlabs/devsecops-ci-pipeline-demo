@@ -135,7 +135,7 @@ Focus: demonstrating applicability beyond a demo repository.
 ---
 
 > This roadmap reflects how a DevSecOps pipeline evolves in real-world engineering organizations:
-> starting with guardrails, progressing through hardening and governance, and scaling with clarity rather than complexity.
+starting with guardrails, progressing through hardening and governance, and scaling with clarity rather than complexity.
 
 
 ---
