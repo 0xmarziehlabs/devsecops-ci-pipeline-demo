@@ -1,0 +1,32 @@
+name: Security vulnerability report (private guidance)
+description: Do NOT report security vulnerabilities publicly. Use a private channel.
+title: "[SECURITY]: "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **Do not file public issues for security vulnerabilities.**
+
+        Please use one of the following private reporting options:
+        - GitHub: **Security** tab → **Report a vulnerability** (preferred)
+        - Or contact the maintainers privately (if a contact method is provided)
+
+        Public disclosure may put users at risk.
+
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I confirm I will not include exploit details or sensitive information in a public issue.
+          required: true
+
+  - type: textarea
+    id: high_level
+    attributes:
+      label: High-level description (non-sensitive)
+      description: If you must leave a note here, keep it high-level and do not include exploit steps, payloads, secrets, or affected endpoints.
+      placeholder: "High-level summary only. No PoC, no payloads, no secrets."
+    validations:
+      required: false
